@@ -1,0 +1,8 @@
+Package: python-rs3psu
+Section: Python
+Priority: optional
+Architecture: all
+Essential: no
+Maintainer: Paul Austen <pausten.os@gmail.com>
+Description: Provides the ability to control ETommens eTM-xxxxP Series PSU's over a USB interface. This PSU is available as Hanmatek HM305P, Rockseed RS305P, Hanmatek HM310P, RockSeed RS310P, Rockseed RS605P.
+Version: 1.0

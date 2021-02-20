@@ -1,0 +1,66 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "b86746f54f69e0d9a5cee96ccf704ce83ecd09d1370dc069689d3d845205aef1"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "3.8"
+        },
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "pymodbus": {
+            "hashes": [
+                "sha256:24ff600245b7cc9f4e299d7099eda5f35d000707bec3429f7bd6690637c22cd5",
+                "sha256:25d2a50bd4651e8092afb8aa1aa6878d4550fbb5ad2a032109fe56fd1d6bf02b"
+            ],
+            "index": "pypi",
+            "version": "==2.4.0"
+        },
+        "pyserial": {
+            "hashes": [
+                "sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb",
+                "sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0"
+            ],
+            "version": "==3.5"
+        },
+        "six": {
+            "hashes": [
+                "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259",
+                "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"
+            ],
+            "version": "==1.15.0"
+        }
+    },
+    "develop": {
+        "pymodbus": {
+            "hashes": [
+                "sha256:24ff600245b7cc9f4e299d7099eda5f35d000707bec3429f7bd6690637c22cd5",
+                "sha256:25d2a50bd4651e8092afb8aa1aa6878d4550fbb5ad2a032109fe56fd1d6bf02b"
+            ],
+            "index": "pypi",
+            "version": "==2.4.0"
+        },
+        "pyserial": {
+            "hashes": [
+                "sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb",
+                "sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0"
+            ],
+            "version": "==3.5"
+        },
+        "six": {
+            "hashes": [
+                "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259",
+                "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"
+            ],
+            "version": "==1.15.0"
+        }
+    }
+}
