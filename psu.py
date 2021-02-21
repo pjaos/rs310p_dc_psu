@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 
+from    time import sleep
 from    optparse import OptionParser
 import  logging
+from    datetime import datetime
 from    pymodbus.client.sync import ModbusSerialClient as ModbusClient
+
+import  matplotlib.pyplot as plt
+from    matplotlib.animation import FuncAnimation
 
 class UIO(object):
     """@brief responsible for user output and input via stdout/stdin"""
@@ -258,6 +263,11 @@ class PSU(object):
         self._options = options
         #the modbus PSU interface
         self._psuIF = None
+        self._timeVals = []
+        self._voltVals = []
+        self._ampVals = []
+        self._wattVals = []
+
         self._init()
 
     def _checkArgs(self):
@@ -324,6 +334,37 @@ class PSU(object):
         self._info("Over power (watts):     {:.3f}".format(oWatts))
         self._info("Buzzer:                 {}".format(self._getOnOff(buzzerOn)))
 
+    def _plotStat(self, a):
+        """@brief Plot a single set of stat values."""
+        print( str(a) )
+        #Read the data
+        volts, amps, watts = self._psuIF.getOutputStats()
+        self._timeVals.append( datetime.now() )
+        self._voltVals.append( volts )
+        self._ampVals.append( amps )
+        self._wattVals.append( watts )
+        self._uio.info("Volts={:.2f}, amps={:.3f}, watts={:.3f}".format(volts, amps, watts))
+        plt.plot(self._timeVals, self._voltVals)
+        plt.plot(self._timeVals, self._ampVals)
+        plt.plot(self._timeVals, self._wattVals)
+
+    def _plotStats(self):
+        """@brief Plot the stats until CRTL C is pressed."""
+        self._timeVals = []
+        self._voltVals = []
+        self._ampVals = []
+        self._wattVals = []
+
+        plt.style.use('fivethirtyeight')
+        plt.figure(figsize=(15,8))
+        plt.title('RS310P PSU')
+        plt.plot([], [], label="volts" , linestyle="-")
+        plt.plot([], [],  label="amps" )
+        plt.plot([], [], label="watts" )
+        plt.legend()
+        ani = FuncAnimation(plt.gcf(), self._plotStat, 1000)
+        plt.show()
+
     def process(self):
         """@brief Process the command line arguments"""
         try:
@@ -369,6 +410,9 @@ class PSU(object):
             if self._options.vs:
                 self._showVerboseStatus()
 
+            if self._options.ps:
+                self._plotStats()
+
         finally:
             if self._psuIF:
                 self._psuIF.disconnect()
@@ -383,6 +427,7 @@ def main():
     opts.add_option("-v",           help="The required output voltage.", type="float", default=-1)
     opts.add_option("-a",           help="The current limit value in amps.", type="float", default=-1)
     opts.add_option("-s",           help="The PSU status showing output state, voltage, current and power out.", action="store_true", default=False)
+    opts.add_option("--ps",         help="Plot the PSU status.", action="store_true", default=False)
     opts.add_option("--vs",         help="The verbose PSU status.", action="store_true", default=False)
     opts.add_option("--ov",         help="The required over voltage protection value in volts", type="float", default=-1)
     opts.add_option("--oa",         help="The required over current protection value in amps.", type="float", default=-1)

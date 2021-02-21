@@ -5,9 +5,11 @@ verify_ssl = true
 
 [dev-packages]
 pymodbus = "*"
+matplotlib = "*"
 
 [packages]
 pymodbus = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.8"
