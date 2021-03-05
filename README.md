@@ -97,7 +97,19 @@ While the above output is displayed on in the terminal window a GUI will report 
 
 ![Overview](images/psu_plot.png "Plotting data from the PSU")
 
-
+# Python
+This software requires that python3.8 is installed on the host computer. 
+Python3.8 can be installed on Debian based machines using the following steps.
+```
+sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget curl
+sudo apt install libssl-dev libffi-dev
+cd /tmp
+curl -O https://www.python.org/ftp/python/3.8.2/Python-3.8.2.tar.xz
+tar -xf Python-3.8.2.tar.xz
+cd Python-3.8.2
+./configure --enable-optimizations
+sudo make altinstall
+```
 
 # Building debian package
 
