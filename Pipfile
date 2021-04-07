@@ -5,11 +5,11 @@ verify_ssl = true
 
 [dev-packages]
 pymodbus = "*"
-matplotlib = "*"
+bokeh = "*"
 
 [packages]
 pymodbus = "*"
-matplotlib = "*"
+bokeh = "*"
 
 [requires]
 python_version = "3.8"
