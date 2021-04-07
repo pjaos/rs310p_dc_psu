@@ -124,7 +124,7 @@ INFO:  Log file: /tmp/psu.log
 
 While the above output is displayed on in the terminal window a GUI will report the amps, volts and watts as shown below.
 
-![Overview](images/psu_plot.png "Plotting data from the PSU")
+![Overview](images/example_plot.png "Plotting data from the PSU")
 
 # Python
 This software requires that python3.8 is installed on the host computer. 
