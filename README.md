@@ -31,21 +31,28 @@ psu -h
 Usage: Provide a control interface to the ROCKSEED RS310P/RS305P Bench PSU.
 
 Options:
-  -h, --help  show this help message and exit
-  --debug     Enable debugging.
-  -p P        Serial port (default=/dev/ttyUSB0).
-  -v V        The required output voltage.
-  -a A        The current limit value in amps.
-  -s          The PSU status showing output state, voltage, current and power
-              out.
-  --vs        The verbose PSU status.
-  --ov=OV     The required over voltage protection value in volts
-  --oa=OA     The required over current protection value in amps.
-  --op=OP     The required over power protection value in watts.
-  --on        Turn the PSU output on.
-  --off       Turn the PSU output off.
-  --bon       Set the buzzer on.
-  --boff      Set the buzzer off.
+  -h, --help     show this help message and exit
+  --debug        Enable debugging.
+  -p P           Serial port (default=/dev/ttyUSB0).
+  -v V           The required output voltage.
+  -a A           The current limit value in amps.
+  -s             The PSU status showing output state, voltage, current and
+                 power out.
+  --vs           The verbose PSU status.
+  --ov=OV        The required over voltage protection value in volts
+  --oa=OA        The required over current protection value in amps.
+  --op=OP        The required over power protection value in watts.
+  --on           Turn the PSU output on.
+  --off          Turn the PSU output off.
+  --bon          Set the buzzer on.
+  --boff         Set the buzzer off.
+  --plot         Plot the PSU status.
+  --poll=POLL    The poll period in seconds (default=1).
+  --log=LOG      Log file. This is used when plotting (default=/tmp/psu.log).
+  --plotl        Plot the data in the log file.
+  --range=RANGE  The Y axis plot range. By default the Y axis will auto range.
+                 If defined then a comma separated list of min,max values is
+                 required. (E.G 0,10)
 ```
 
 Below is an example of PSU control
@@ -82,14 +89,36 @@ INFO:  Watts (watts):          16.220
 It is possible to plot the load status of the PSU output as shown below.
 
 ```
-pja@E5570:/scratch/git_repos/python3/rs310p_dc_psu$ psu -p /dev/ttyUSB0 --ps
-0
-INFO:  Volts=2.00, amps=1.298, watts=2.596
-0
-INFO:  Volts=2.00, amps=1.298, watts=2.596
-1
-INFO:  Volts=2.00, amps=1.298, watts=2.596
-2
+psu -p /dev/ttyUSB1 --plot
+INPUT: Overwrite /tmp/psu.log y/n: y
+INFO:  Deleted /tmp/psu.log
+INFO:  Created /tmp/psu.log
+INFO:  Log file: /tmp/psu.log
+INFO:  07/04/2021-06:31:21.443879: Volts=0.0 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:22.525330: Volts=0.0 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:23.607161: Volts=0.0 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:24.688638: Volts=0.0 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:25.770133: Volts=0.0 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:26.843266: Volts=0.0 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:27.903139: Volts=5.44 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:28.983893: Volts=5.44 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:30.065649: Volts=5.44 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:31.147416: Volts=5.44 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:32.229178: Volts=5.44 Amps=0.233 Watts=1.267
+INFO:  07/04/2021-06:31:33.310734: Volts=5.44 Amps=0.233 Watts=1.267
+INFO:  07/04/2021-06:31:34.392418: Volts=5.44 Amps=0.233 Watts=1.267
+INFO:  07/04/2021-06:31:35.474215: Volts=5.44 Amps=0.233 Watts=1.267
+INFO:  07/04/2021-06:31:36.555785: Volts=5.44 Amps=0.233 Watts=1.267
+INFO:  07/04/2021-06:31:37.637373: Volts=5.44 Amps=0.233 Watts=1.267
+INFO:  07/04/2021-06:31:38.718189: Volts=5.44 Amps=0.234 Watts=1.272
+INFO:  07/04/2021-06:31:39.800310: Volts=5.44 Amps=0.233 Watts=1.267
+INFO:  07/04/2021-06:31:40.882058: Volts=5.44 Amps=0.233 Watts=1.267
+INFO:  07/04/2021-06:31:41.963638: Volts=5.44 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:43.081069: Volts=0.0 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:44.159651: Volts=0.0 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:45.241097: Volts=0.0 Amps=0.0 Watts=0
+INFO:  07/04/2021-06:31:46.307041: Volts=0.0 Amps=0.0 Watts=0
+INFO:  Log file: /tmp/psu.log
 .....
 ```
 
