@@ -33,6 +33,7 @@ Usage: Provide a control interface to the ROCKSEED RS310P/RS305P Bench PSU.
 Options:
   -h, --help     show this help message and exit
   --debug        Enable debugging.
+  -g             Run the GUI.
   -p P           Serial port (default=/dev/ttyUSB0).
   -v V           The required output voltage.
   -a A           The current limit value in amps.
@@ -55,7 +56,29 @@ Options:
                  required. (E.G 0,10)
 ```
 
-Below is an example of PSU control
+# GUI interface
+If the -g argument is used then the GUI is displayed to control the PDU.
+
+```
+psu -g
+```
+
+This displays the following GUI in a web browser tab.
+
+![Overview](images/gui_1.png "Initial GUI")
+
+The serial port that is connected to the PSU (USB cable connection must be selected.
+When the On button is selected a connection is made to the PSU, the PSU is turned on (the output voltage will be that set in the 'Output Voltage' field). When the PSU is on the volts, amps and watts are plotted as shown below.
+
+![Overview](images/gui_2.png "Connected to PSU")
+
+ - The voltage and current limit may be set using the set button while the PSU is on.
+ - The max time that a value will remain in the plot can be set by changing the plot history field.
+ - The quit button can be selected to shut down the psu application. The PSU will be turned off as the application is shut down.
+
+
+
+Below is an example of PSU control using the command line interface.
 
 ```
 psu -s
