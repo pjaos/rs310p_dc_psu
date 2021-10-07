@@ -14,7 +14,7 @@ Currently an installer is available for Linux systems. The python code should ru
 sudo dpkg -i python-rs3psu-1.1-all.deb
 ```
 
-#Running the psu command
+# Running the psu command
 Once installed the psu command is available on the command line. The psu command has command line help as shown below
 
 ```
