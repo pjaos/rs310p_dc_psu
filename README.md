@@ -14,15 +14,6 @@ Currently an installer is available for Linux systems. The python code should ru
 sudo dpkg -i python-rs3psu-1.1-all.deb
 ```
 
-## Installing the RPM package
-- Download the packages/python-rs3psu-1.1-2.noarch.rpm. The version (currently 1.1) of the package may change.
-- Install the package from a terminal window on your machine as shown below.
-```
-sudo rpm -Uvh python-rs3psu-1.1-2.noarch.rpm
-```
-
-
-
 #Running the psu command
 Once installed the psu command is available on the command line. The psu command has command line help as shown below
 
