@@ -34,3 +34,13 @@ if !(which python3.8) > /dev/null ; then
   echo "When the above steps are complete try installing this package again"
   exit 1
 fi
+
+if !(which pipenv) > /dev/null ; then
+  echo "*************************************************************"
+  echo "* pipenv is not installed is not installed on your computer *"
+  echo "*************************************************************"
+  check_internet_connectivity
+  echo "Run the following command."
+  echo "    python3.8 -m pip install pipenv"
+  exit 1
+fi
