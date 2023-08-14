@@ -409,7 +409,7 @@ def main():
     opts=OptionParser(usage='Provide a control interface to the ROCKSEED RS310P/RS305P Bench PSU.')
     opts.add_option("--debug",      help="Enable debugging.", action="store_true", default=False)
     opts.add_option("-g",           help="Run the GUI.", action="store_true", default=False)
-    opts.add_option("-p",           help="Serial port (default={}).".format(PSU.DEFAULT_SERIAL_PORT), default=PSU.DEFAULT_SERIAL_PORT)
+    opts.add_option("-p",           help="Serial port (default={}). Enter in 'host:port' format for an Esp-Link bridge.".format(PSU.DEFAULT_SERIAL_PORT), default=PSU.DEFAULT_SERIAL_PORT)
     opts.add_option("-v",           help="The required output voltage.", type="float", default=-1)
     opts.add_option("-a",           help="The current limit value in amps.", type="float", default=-1)
     opts.add_option("-s",           help="The PSU status showing output state, voltage, current and power out.", action="store_true", default=False)
@@ -430,6 +430,10 @@ def main():
 
     try:
         (options, args) = opts.parse_args()
+
+        if ':' in options.p:
+            host, port = options.p.split(':')
+            options.p = (host, int(port))
 
         psu = PSU(uio, options)
         psu.process()

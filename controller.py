@@ -2,7 +2,9 @@
 
 import  logging
 
-from    pymodbus.client.sync import ModbusSerialClient as ModbusClient
+from typing import Tuple, Union
+from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.client.sync import ModbusTcpClient, ModbusSerialClient
 
 class ETMXXXXPError(Exception):
     """@brief An exception produced by ETMXXXXP class instances."""
@@ -65,10 +67,9 @@ class ETMXXXXP(object):
     OVER_PWR_PROT_LOW_REG_ADDR  = 0x0023    #Bottom 16 bits of over power protection
     BUZZER_REG_ADDR             = 0x8804    # 1 = enable (beep on key press), 0 = disable
 
-    def __init__(self, port, unit=1, debug=False):
+    def __init__(self, port: Union[str, Tuple[str, int]], unit=1, debug=False):
         """@brief Constructor
-           @param uio A UIO instance handling user input and output (E.G stdin/stdout or a GUI)
-           @param options An instance of the OptionParser command line options.
+           @param port the port on which to communicate with the PSU. (host, port) or (file)
            @param unit The unit number on the modbus"""
         self._port = port
         self._unit = unit
@@ -82,7 +83,14 @@ class ETMXXXXP(object):
 
     def connect(self):
         """@brief connect to the PSU over the serial port."""
-        self._client = ModbusClient(method='rtu', port=self._port, baudrate=9600, stopbits=1, bytesize=8, timeout=10)
+        if len(self._port) == 2:
+            self._client = ModbusTcpClient(
+                self._port[0], self._port[1], framer=ModbusRtuFramer)
+        else:
+            self._client = ModbusSerialClient(
+                method='rtu', port=self._port,
+                baudrate=9600, stopbits=1, bytesize=8, timeout=10)
+
         self._client.connect()
 
     def disconnect(self):
