@@ -21,7 +21,7 @@ from bokeh.server.server import Server
 from bokeh.application import Application
 from bokeh.application.handlers.function import FunctionHandler
 from bokeh.plotting import figure, ColumnDataSource
-from bokeh.models import Range1d
+from bokeh.models import Range1d, AutocompleteInput
 from bokeh.palettes import Category20_20 as palette
 
 from bokeh.plotting import save, output_file
@@ -163,8 +163,8 @@ class PSUGUI(TabbedGUI):
         self._figTable[-1].append(fig)
         self._grid = gridplot(children = self._figTable, sizing_mode = 'scale_both',  toolbar_location='right')
 
-        self.selectSerialPort = Select(title="Serial Port:")
-        self.selectSerialPort.options = glob.glob('/dev/ttyU*')
+        self.selectSerialPort = AutocompleteInput(title="Serial Port:")
+        self.selectSerialPort.completions = glob.glob('/dev/ttyU*')
         
         self.outputVoltageSpinner = Spinner(title="Output Voltage (Volts)", low=0, high=40, step=0.5, value=self._pconfig.getAttr(PSUGUI.VOLTS))
         self.currentLimitSpinner = Spinner(title="Currnet Limit (Amps)", low=0, high=10, step=0.25, value=self._pconfig.getAttr(PSUGUI.AMPS))
@@ -295,16 +295,11 @@ class PSUGUI(TabbedGUI):
     def getSelectedSerialPort(self):
         """@brief Get the selected serial port.
            @return the selected Serial port or None if not selected."""
-        selectedSerialPort = None
-        if len(self.selectSerialPort.options) == 1:
-            selectedSerialPort = self.selectSerialPort.options[0]
-        elif self.selectSerialPort.value:
-            selectedSerialPort = self.selectSerialPort.value
-        
-        if not selectedSerialPort and len(self.selectSerialPort.options) > 0:
-            selectedSerialPort = self.selectSerialPort.options[0]
-            
-        return selectedSerialPort
+        if ':' in self.selectSerialPort.value_input:
+            # hostname & port
+            return self.selectSerialPort.value_input.split(':')
+        else:
+            return self.selectSerialPort.value_input
 
     def _psuOff(self):
         """@brief Turn the PSU off."""
@@ -346,5 +341,4 @@ class PSUGUI(TabbedGUI):
             else:
                 self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.PSU_CONNECT_FAILED, ("Failed to connect to PSU on {}".format(serialPort),) ) ) 
                 self.setStatus("Failed to connect to PSU.")
-            
             
