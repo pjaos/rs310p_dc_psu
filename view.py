@@ -76,8 +76,8 @@ class PSUGUI(TabbedGUI):
     VOLTS = "volts"
     PLOT_SECONDS = "plotSeconds"
     CFG_DICT = {
-        VOLTS: "5",
-        AMPS: "1",
+        VOLTS: 5,
+        AMPS: 1,
         PLOT_SECONDS: 300
     }
     def __init__(self, docTitle, bokehPort=12000):
@@ -134,7 +134,7 @@ class PSUGUI(TabbedGUI):
             
     def _updatePlot(self, volts, amps, watts):
         """@brief called periodically to update the plot trace."""
-        plotPoints = self.plotHistorySpinner.value*2
+        plotPoints = int(self.plotHistorySpinner.value*2)
         now = datetime.now()     
         newVolts = {'x': [now],
                     'y': [volts]}
@@ -166,9 +166,9 @@ class PSUGUI(TabbedGUI):
         self.selectSerialPort = AutocompleteInput(title="Serial Port:")
         self.selectSerialPort.completions = glob.glob('/dev/ttyU*')
         
-        self.outputVoltageSpinner = Spinner(title="Output Voltage (Volts)", low=0, high=40, step=0.5, value=self._pconfig.getAttr(PSUGUI.VOLTS))
-        self.currentLimitSpinner = Spinner(title="Currnet Limit (Amps)", low=0, high=10, step=0.25, value=self._pconfig.getAttr(PSUGUI.AMPS))
-        self.plotHistorySpinner = Spinner(title="Plot History (Seconds)", low=1, high=10000, step=1, value=self._pconfig.getAttr(PSUGUI.PLOT_SECONDS))
+        self.outputVoltageSpinner = Spinner(title="Output Voltage (Volts)", low=0, high=40, step=0.5, value=float(self._pconfig.getAttr(PSUGUI.VOLTS)))
+        self.currentLimitSpinner = Spinner(title="Currnet Limit (Amps)", low=0, high=10, step=0.25, value=float(self._pconfig.getAttr(PSUGUI.AMPS)))
+        self.plotHistorySpinner = Spinner(title="Plot History (Seconds)", low=1, high=10000, step=1, value=float(self._pconfig.getAttr(PSUGUI.PLOT_SECONDS)))
         
         self._setButton = Button(label="Set")
         self._setButton.on_click(self._setHandler)
