@@ -6,6 +6,7 @@ import  threading
 import  asyncio
 import  queue
 import  tempfile
+import  socket
 
 from bokeh.server.server import Server
 from bokeh.application import Application
@@ -177,6 +178,28 @@ class PSU(object):
     LOG_FILENAME        = "psu.log"
     DEFAULT_LOG_FILE    = os.path.join( tempfile.gettempdir(), LOG_FILENAME)
 
+    @staticmethod
+    def GetNextUnusedPort(basePort=1024, maxPort = 65534, bindAddress="0.0.0.0"):
+        """@brief Get the first unused above the base port.
+           @param basePort The port to start checking for available ports.
+           @param maxPort The highest port number to check.
+           @param bindAddress The address to bind to.
+           @return The TCP port or -1 if no port is available."""
+        port = basePort
+        while True:
+            try:
+                sock = socket.socket()
+                sock.bind((bindAddress, port))
+                sock.close()
+                break
+            except:
+                port = port + 1
+                if port > maxPort:
+                    port = -1
+                    break
+
+        return port
+
     def __init__(self, uio, options):
         """@brief Constructor
            @param uio A UIO instance handling user input and output (E.G stdin/stdout or a GUI)
@@ -341,7 +364,8 @@ class PSU(object):
     def _runGUI(self):
         """@brief Start the GUI."""
         plotPaneWidth = 800
-        self._gui = PSUGUI("DOC TITLE", self._options.p)
+        port = PSU.GetNextUnusedPort()
+        self._gui = PSUGUI("DOC TITLE", self._options.p, bokehPort=port)
         self._gui.runBokehServer()
 
     def process(self):
