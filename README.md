@@ -153,8 +153,8 @@ While the above output is displayed on in the terminal window a GUI will report 
 ![Overview](images/example_plot.png "Plotting data from the PSU")
 
 # Python
-This software requires that python3.8 is installed on the host computer.
-Python3.8 can be installed on Debian based machines using the following steps.
+This software requires that python3 is installed on the host computer.
+Python3 can be installed on Debian based machines using the following steps.
 ```
 sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget curl
 sudo apt install libssl-dev libffi-dev
@@ -198,3 +198,8 @@ INFO:  Removed build path
 ```
 
 This leaves a *.deb, *.rpm and a *.tgz file in the packages folder. The installation of the *.deb and *.rpm files is detailed above. The *.tgz file could be used as the basis for an installer on other platforms (E.G  Windows).
+
+
+
+# Thanks
+Thanks to all those who have contributed to this project.
