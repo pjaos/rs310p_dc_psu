@@ -28,7 +28,7 @@ from    datetime import datetime
 def appendCreateFile(uio, aFile, quiet=False):
     """@brief USer interaction to append or create a file.
        @param uio A UIO instance.
-       @param quiet If True do not show uio messages (apart from overwrite prompt. 
+       @param quiet If True do not show uio messages (apart from overwrite prompt.
        @param aFile The file to append or delete."""
     createFile = False
     if os.path.isfile(aFile):
@@ -39,10 +39,10 @@ def appendCreateFile(uio, aFile, quiet=False):
             createFile = True
         else:
             if not quiet:
-                uio.info("Appending to {}".format(aFile))                        
+                uio.info("Appending to {}".format(aFile))
 
     else:
-        createFile = True      
+        createFile = True
 
     if createFile:
         fd = open(aFile, 'w')
@@ -65,7 +65,7 @@ class Reading(object):
         self.volts = volts
         self.amps  = amps
         self.watts = watts
-    
+
 class Plotter(object):
     """@brief Responsible for plotting the DMM values."""
 
@@ -82,7 +82,7 @@ class Plotter(object):
         self._wattsSource = ColumnDataSource({'x': [], 'y': []})
         self._evtLoop = None
         self._queue = queue.Queue()
-        
+
     def runBokehServer(self):
         """@brief Run the bokeh server. This is a blocking method."""
         apps = {'/': Application(FunctionHandler(self._createPlot))}
@@ -94,7 +94,7 @@ class Plotter(object):
         #Show the server in a web browser window
         server.io_loop.add_callback(server.show, "/")
         server.io_loop.start()
-        
+
     def _createPlot(self, doc, ):
         """@brief create a plot figure.
            @param doc The document to add the plot to."""
@@ -102,8 +102,8 @@ class Plotter(object):
             yrange = Range1d(self._yRangeLimits[0],self._yRangeLimits[1])
         else:
             yrange = None
-        fig = figure(title=self._plotTitle, 
-                     toolbar_location='above', 
+        fig = figure(title=self._plotTitle,
+                     toolbar_location='above',
                      x_axis_type="datetime",
                      x_axis_location="below",
                      y_range=yrange)
@@ -114,28 +114,28 @@ class Plotter(object):
         doc.title = self._plotTitle
         doc.add_root(grid)
         doc.add_periodic_callback(self._update, 100)
-              
+
     def _update(self):
         """@brief called periodically to update the plot trace."""
         while not self._queue.empty():
-            reading = self._queue.get()                       
+            reading = self._queue.get()
             newVolts = {'x': [reading.time],
                         'y': [reading.volts]}
             self._voltsSource.stream(newVolts)
-            
+
             newAmps = {'x': [reading.time],
                        'y': [reading.amps]}
             self._ampsSource.stream(newAmps)
-            
+
             newWatts = {'x': [reading.time],
                         'y': [reading.watts]}
             self._wattsSource.stream(newWatts)
-            
+
     def addReading(self, reading):
         """@brief Add a value to be plotted
            @param reading The reading containing the values to be plotted."""
         self._queue.put(reading)
-        
+
 class UIO(object):
     """@brief responsible for user output and input via stdout/stdin"""
 
@@ -153,7 +153,7 @@ class UIO(object):
 
     def input(self, prompt):
         return input("INPUT: "+prompt)
-    
+
     def getBoolInput(self, prompt, allowQuit=True):
         """@brief Get boolean repsonse from user (y or n response).
            @param allowQuit If True and the user enters q then the program will exit.
@@ -176,7 +176,7 @@ class PSU(object):
     DEFAULT_SERIAL_PORT = "/dev/ttyUSB0"
     LOG_FILENAME        = "psu.log"
     DEFAULT_LOG_FILE    = os.path.join( tempfile.gettempdir(), LOG_FILENAME)
-    
+
     def __init__(self, uio, options):
         """@brief Constructor
            @param uio A UIO instance handling user input and output (E.G stdin/stdout or a GUI)
@@ -261,7 +261,7 @@ class PSU(object):
         fd = open(self._options.log, 'a')
         fd.write("{}: {} {} {}\n".format(timeStr, reading.volts, reading.amps, reading.watts))
         fd.close()
-    
+
     def _getYRange(self):
         """@brief Get the Y range.
            @return a tuple with min,max or None if not defined (autorange)"""
@@ -276,7 +276,7 @@ class PSU(object):
                     pass
                 yRange = (min, max)
         return yRange
-    
+
     def _plotStats(self):
         """@brief Plot the stats until CRTL C is pressed."""
         appendCreateFile(self._uio, self._options.log)
@@ -290,7 +290,7 @@ class PSU(object):
                 #Read the data
                 volts, amps, watts = self._psuIF.getOutputStats()
                 self
-                reading = Reading(volts, amps, watts)       
+                reading = Reading(volts, amps, watts)
                 self._recordLog(reading)
                 self._plotter.addReading(reading)
                 sleep(self._options.poll)
@@ -324,7 +324,7 @@ class PSU(object):
                     pass
 
         return readingList
-    
+
     def _plotLog(self):
         """@brief Plot data from the log file."""
         if not os.path.isfile(self._options.log):
@@ -337,13 +337,13 @@ class PSU(object):
         for reading in readingList:
             self._plotter.addReading(reading)
         bt.join()
-        
+
     def _runGUI(self):
         """@brief Start the GUI."""
         plotPaneWidth = 800
-        self._gui = PSUGUI("DOC TITLE")
+        self._gui = PSUGUI("DOC TITLE", self._options.p)
         self._gui.runBokehServer()
-        
+
     def process(self):
         """@brief Process the command line arguments"""
         try:
@@ -391,10 +391,10 @@ class PSU(object):
 
             if self._options.plot:
                 self._plotStats()
-                
+
             if self._options.plotl:
                 self._plotLog()
-                
+
             if self._options.g:
                 self._runGUI()
 
@@ -409,7 +409,7 @@ def main():
     opts=OptionParser(usage='Provide a control interface to the ROCKSEED RS310P/RS305P Bench PSU.')
     opts.add_option("--debug",      help="Enable debugging.", action="store_true", default=False)
     opts.add_option("-g",           help="Run the GUI.", action="store_true", default=False)
-    opts.add_option("-p",           help="Serial port (default={}). Enter in 'host:port' format for an Esp-Link bridge.".format(PSU.DEFAULT_SERIAL_PORT), default=PSU.DEFAULT_SERIAL_PORT)
+    opts.add_option("-p",           help="The local machine USB serial port connected to the PSU (default={}) or the 'host:port' format for an Esp-Link bridge.".format(PSU.DEFAULT_SERIAL_PORT), default=PSU.DEFAULT_SERIAL_PORT)
     opts.add_option("-v",           help="The required output voltage.", type="float", default=-1)
     opts.add_option("-a",           help="The current limit value in amps.", type="float", default=-1)
     opts.add_option("-s",           help="The PSU status showing output state, voltage, current and power out.", action="store_true", default=False)

@@ -25,7 +25,9 @@ Options:
   -h, --help     show this help message and exit
   --debug        Enable debugging.
   -g             Run the GUI.
-  -p P           Serial port (default=/dev/ttyUSB0).
+  -p P           The local machine USB serial port connected to the PSU
+                 (default=/dev/ttyUSB0) or the 'host:port' format for an Esp-
+                 Link bridge.
   -v V           The required output voltage.
   -a A           The current limit value in amps.
   -s             The PSU status showing output state, voltage, current and
@@ -67,7 +69,17 @@ When the On button is selected a connection is made to the PSU, the PSU is turne
  - The max time that a value will remain in the plot can be set by changing the plot history field.
  - The quit button can be selected to shut down the psu application. The PSU will be turned off as the application is shut down.
 
+If the GUI is started when the port is defined as an address:port pair if the PSU is connected to an ESP Link Bridge then the GUI shows the address:port rather than a pull down menu of local serial ports as shown Below.
 
+```
+psu -g -p 192.168.0.40:3800
+```
+
+![Overview](images/gui_3.png "Inital GUI With Remote Serial Port")
+
+The user can change the address or serial port from the default values set on the command line.
+
+# Command Line Interface
 
 Below is an example of PSU control using the command line interface.
 
@@ -141,7 +153,7 @@ While the above output is displayed on in the terminal window a GUI will report 
 ![Overview](images/example_plot.png "Plotting data from the PSU")
 
 # Python
-This software requires that python3.8 is installed on the host computer. 
+This software requires that python3.8 is installed on the host computer.
 Python3.8 can be installed on Debian based machines using the following steps.
 ```
 sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget curl

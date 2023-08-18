@@ -50,9 +50,9 @@ from pickle import NONE
 # - Update README.md
 
 class PSUGUIUpdateEvent(UpdateEvent):
-    """@brief Responsible for holding the state of an event sent from a non GUI thread 
+    """@brief Responsible for holding the state of an event sent from a non GUI thread
               to the GUI thread context in order to update the GUI in some way."""
-    
+
     # UPDATE_STATUS_TEXT = 1 # Implemented in parent class
     CONNECTING_TO_PSU  = 2
     CONNECTED_TO_PSU   = 3
@@ -61,16 +61,16 @@ class PSUGUIUpdateEvent(UpdateEvent):
     PSU_OFF            = 6
     SET_PSU_STATE      = 7
     SHUTDOWN_SERVER    = 8
-        
+
     def __init__(self, id, argList=None):
         """@brief Constructor
            @param id An integer event ID
            @param argList A list of arguments associated with the event"""
         super().__init__(id, argList)
-    
+
 class PSUGUI(TabbedGUI):
     """@brief Responsible for plotting data on tab 0 with no other tabs."""
-    
+
     CFG_FILENAME = ".RS310P_GUI.cfg"
     AMPS = "amps"
     VOLTS = "volts"
@@ -80,19 +80,24 @@ class PSUGUI(TabbedGUI):
         AMPS: 1,
         PLOT_SECONDS: 300
     }
-    def __init__(self, docTitle, bokehPort=12000):
-        """@Constructor"""
+    def __init__(self, docTitle, serialPort, bokehPort=12000):
+        """@brief Constructor
+           @param docTitle The title of the bokeh server web page.
+           @param The serial port as defined on the command line."""
         super().__init__(docTitle, bokehPort=bokehPort)
+        self._serialPort = serialPort
         self._figTable=[[]]
         self._grid = None
         self._textBuffer = ""
         self._psu = None
         self._on = False
+        self._addressInput = None
+        self._tcpPortSpinner = None
 
     def info(self, msg):
         """@brief Display an info level message."""
         self.statusBarWrapper.setStatus("INFO:  "+msg)
-        
+
     def error(self, msg):
         """@brief Display an error level message."""
         self.statusBarWrapper.setStatus("ERROR: "+msg)
@@ -100,7 +105,7 @@ class PSUGUI(TabbedGUI):
     def debug(self, msg):
         """@brief Display an error level message."""
         pass
-                
+
     def addRow(self):
         """@brief Add an empty row to the figures."""
         self._figTable.append([])
@@ -115,39 +120,39 @@ class PSUGUI(TabbedGUI):
            @param doc The document to add the plot to."""
         self._doc = doc
         self._doc.title = "RS310P PSU Controller"
-        
+
         self.statusBarWrapper = StatusBarWrapper()
         self._pconfig = ConfigManager(self, PSUGUI.CFG_FILENAME, PSUGUI.CFG_DICT)
         self._pconfig.load()
-        
+
         plotPanel = self._getPlotPanel()
-       
+
         self._tabList.append( Panel(child=plotPanel,  title="DC Power Supply Control") )
         self._doc.add_root( Tabs(tabs=self._tabList) )
         self._doc.add_periodic_callback(self._viewUpdate, 500)
-                
+
     def _viewUpdate(self):
         if self._on:
             volts, amps, watts = self._psu.getOutputStats()
             self._opTableWrapper.setRows( [[volts, amps, watts]] )
             self._updatePlot(volts, amps, watts)
-            
+
     def _updatePlot(self, volts, amps, watts):
         """@brief called periodically to update the plot trace."""
         plotPoints = int(self.plotHistorySpinner.value*2)
-        now = datetime.now()     
+        now = datetime.now()
         newVolts = {'x': [now],
                     'y': [volts]}
         self._voltsSource.stream(newVolts, rollover=plotPoints)
-        
+
         newAmps = {'x': [now],
                    'y': [amps]}
         self._ampsSource.stream(newAmps, rollover=plotPoints)
-        
+
         newWatts = {'x': [now],
                     'y': [watts]}
         self._wattsSource.stream(newWatts, rollover=plotPoints)
-        
+
     def _getPlotPanel(self):
         """@brief Add tab that shows plot data updates."""
 
@@ -163,25 +168,34 @@ class PSUGUI(TabbedGUI):
         self._figTable[-1].append(fig)
         self._grid = gridplot(children = self._figTable, sizing_mode = 'scale_both',  toolbar_location='right')
 
-        self.selectSerialPort = Select(title="Serial Port:")
-        self.selectSerialPort.options = glob.glob('/dev/ttyU*')
-        
+        remotePanel = None
+        if self._isSerialPortRemote():
+            self._addressInput = TextInput(value=self._serialPort[0], title="Address:", width=200)
+            self._tcpPortSpinner = Spinner(title="TCP Port", low=1, high=65535, value=self._serialPort[1], step=1, width=100)
+            remotePanel = row([self._addressInput, self._tcpPortSpinner])
+        else:
+            self.selectSerialPort = Select(title="Local Serial Port:")
+            self.selectSerialPort.options = glob.glob('/dev/ttyU*')
+
         self.outputVoltageSpinner = Spinner(title="Output Voltage (Volts)", low=0, high=40, step=0.5, value=float(self._pconfig.getAttr(PSUGUI.VOLTS)))
         self.currentLimitSpinner = Spinner(title="Currnet Limit (Amps)", low=0, high=10, step=0.25, value=float(self._pconfig.getAttr(PSUGUI.AMPS)))
         self.plotHistorySpinner = Spinner(title="Plot History (Seconds)", low=1, high=10000, step=1, value=float(self._pconfig.getAttr(PSUGUI.PLOT_SECONDS)))
-        
+
         self._setButton = Button(label="Set")
         self._setButton.on_click(self._setHandler)
         self._setButton.disabled=True
-                
+
         self._onButton = Button(label="On")
         self._onButton.on_click(self._psuOnHandler)
-        
+
         shutdownButtonWrapper = ShutdownButtonWrapper(self._quit)
-        controlPanel = column([self.selectSerialPort, self._onButton, self.outputVoltageSpinner, self.currentLimitSpinner, self._setButton, self.plotHistorySpinner, shutdownButtonWrapper.getWidget()])
-        
+        if remotePanel:
+            controlPanel = column([remotePanel, self._onButton, self.outputVoltageSpinner, self.currentLimitSpinner, self._setButton, self.plotHistorySpinner, shutdownButtonWrapper.getWidget()])
+        else:
+            controlPanel = column([self.selectSerialPort, self._onButton, self.outputVoltageSpinner, self.currentLimitSpinner, self._setButton, self.plotHistorySpinner, shutdownButtonWrapper.getWidget()])
+
         self._opTableWrapper = ReadOnlyTableWrapper( ("volts","amps","watts"), heightPolicy="fixed", height=65, showLastRows=0 )
-                
+
         plotPanel = column([self._grid, self._opTableWrapper.getWidget()])
         panel2 = row([controlPanel, plotPanel])
         plotPanel = column([panel2, self.statusBarWrapper.getWidget()])
@@ -192,30 +206,30 @@ class PSUGUI(TabbedGUI):
             self._psuOff()
         self._run(self._delayedShutdown)
         self._doc.clear()
-        
+
     def _delayedShutdown(self):
         """@brief Allow time for browser page to clear before shutdown."""
         volts = self.outputVoltageSpinner.value
         amps = self.currentLimitSpinner.value
         self._pconfig.addAttr(PSUGUI.VOLTS, volts)
         self._pconfig.addAttr(PSUGUI.AMPS, amps)
-        self._pconfig.addAttr(PSUGUI.PLOT_SECONDS, self.plotHistorySpinner.value) 
+        self._pconfig.addAttr(PSUGUI.PLOT_SECONDS, self.plotHistorySpinner.value)
         self._pconfig.store()
         sleep(0.5)
-        self._sendUpdateEvent( PSUGUIUpdateEvent(PSUGUIUpdateEvent.SHUTDOWN_SERVER) ) 
-        
+        self._sendUpdateEvent( PSUGUIUpdateEvent(PSUGUIUpdateEvent.SHUTDOWN_SERVER) )
+
     def _psuOnHandler(self):
         """@brief event handler."""
         #Stop the user from clicking the button again until this click has been processed.
         self._onButton.disabled = True
         #Turn the PSUon/off method outside GUI thread
         self._run(self._powerOnOff)
-        
+
     def _setHandler(self):
         """@brief event handler."""
         #Turn the PSUon/off method outside GUI thread
         self._run(self._setPSU)
-        
+
     def _rxUpdateEvent(self, updateEvent):
         """@brief Receive an event into the GUI context to update the GUI.
            @param updateEvent An PSUGUIUpdateEvent instance."""
@@ -226,15 +240,15 @@ class PSUGUI(TabbedGUI):
             self._onButton.button_type = "success"
             self._onButton.disabled = True
             self.statusBarWrapper.setStatus(updateEvent.argList[0])
-            
+
         elif updateEvent.id == PSUGUIUpdateEvent.PSU_CONNECT_FAILED:
             self._onButton.button_type = "default"
             self._onButton.disabled = False
             self._setButton.disabled = True
             self._setButton.button_type = "default"
-            self.statusBarWrapper.setStatus(updateEvent.argList[0])        
-            
-        elif updateEvent.id == PSUGUIUpdateEvent.CONNECTED_TO_PSU:            
+            self.statusBarWrapper.setStatus(updateEvent.argList[0])
+
+        elif updateEvent.id == PSUGUIUpdateEvent.CONNECTED_TO_PSU:
             self._setButton.button_type = "success"
             self._setButton.disabled = False
             self._onButton.button_type = "success"
@@ -243,67 +257,87 @@ class PSUGUI(TabbedGUI):
             self.statusBarWrapper.setStatus("PSU ON")
             self._pconfig.addAttr(PSUGUI.VOLTS, self.outputVoltageSpinner.value)
             self._pconfig.addAttr(PSUGUI.AMPS, self.currentLimitSpinner.value)
-            self._pconfig.addAttr(PSUGUI.PLOT_SECONDS, self.plotHistorySpinner.value)         
+            self._pconfig.addAttr(PSUGUI.PLOT_SECONDS, self.plotHistorySpinner.value)
             self._pconfig.store()
-            
+
         elif updateEvent.id == PSUGUIUpdateEvent.TURNING_PSU_OFF:
             self._onButton.button_type = "default"
             self._setButton.disabled = True
             self._onButton.disabled = True
             self._setButton.button_type = "default"
             self.statusBarWrapper.setStatus("Turning PSU OFF")
-            
+
         elif updateEvent.id == PSUGUIUpdateEvent.PSU_OFF:
             self._onButton.button_type = "default"
             self._onButton.disabled = False
             self._onButton.label = "On"
             self.statusBarWrapper.setStatus("PSU OFF")
-            
-        elif updateEvent.id == PSUGUIUpdateEvent.SET_PSU_STATE:    
+
+        elif updateEvent.id == PSUGUIUpdateEvent.SET_PSU_STATE:
             volts = self.outputVoltageSpinner.value
             amps = self.currentLimitSpinner.value
             self._pconfig.addAttr(PSUGUI.VOLTS, volts)
             self._pconfig.addAttr(PSUGUI.AMPS, amps)
-            self._pconfig.addAttr(PSUGUI.PLOT_SECONDS, self.plotHistorySpinner.value) 
+            self._pconfig.addAttr(PSUGUI.PLOT_SECONDS, self.plotHistorySpinner.value)
             self._pconfig.store()
             self.statusBarWrapper.setStatus("Set {:.2f} volts with a {:.3f} amp current limit".format(volts, amps))
-            
-        elif updateEvent.id == PSUGUIUpdateEvent.SHUTDOWN_SERVER:  
+
+        elif updateEvent.id == PSUGUIUpdateEvent.SHUTDOWN_SERVER:
             self.stopServer()
             print("PJA: SERVER SHUTDOWN.")
-                        
-                        
-                        
-                        
-                        
-                        
+
+
+
+
+
+
     def _powerOnOff(self):
-        """@brief Called to turn the PSU on/off""" 
+        """@brief Called to turn the PSU on/off"""
         if self._on:
             self._psuOff()
         else:
             self._psuOn()
-            
+
     def _setPSU(self):
         """@brief Called when the PSU is on to set the state of the PSU."""
         volts = self.outputVoltageSpinner.value
         amps = self.currentLimitSpinner.value
         self._psu.setVoltage(volts)
         self._psu.setCurrentLimit(amps)
-        self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.SET_PSU_STATE) ) 
-        
+        self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.SET_PSU_STATE) )
+
+    def _isSerialPortRemote(self):
+        """@brief Determine if the serial port is remote.
+           @return True if the serial port is remote."""
+        remoterSerial = False
+        # If the user set an address and port on the command line rather
+        # than using a local serial port.
+        if isinstance(self._serialPort, tuple):
+            remoterSerial = True
+        return remoterSerial
+
     def getSelectedSerialPort(self):
         """@brief Get the selected serial port.
            @return the selected Serial port or None if not selected."""
         selectedSerialPort = None
-        if len(self.selectSerialPort.options) == 1:
-            selectedSerialPort = self.selectSerialPort.options[0]
-        elif self.selectSerialPort.value:
-            selectedSerialPort = self.selectSerialPort.value
-        
-        if not selectedSerialPort and len(self.selectSerialPort.options) > 0:
-            selectedSerialPort = self.selectSerialPort.options[0]
-            
+
+        if self._isSerialPortRemote():
+            selectedSerialPort = [self._addressInput.value, self._tcpPortSpinner.value]
+
+        else:
+            # If only one serial port is available select it. This may not be selected.
+            if len(self.selectSerialPort.options) == 1:
+                selectedSerialPort = self.selectSerialPort.options[0]
+
+            # If more than one is available then use the selected port.
+            elif self.selectSerialPort.value:
+                selectedSerialPort = self.selectSerialPort.value
+
+            # Handle bokeh unselected port which may occur due to the sequence that
+            # bokeh callbacks are called.
+            if not selectedSerialPort and len(self.selectSerialPort.options) > 0:
+                selectedSerialPort = self.selectSerialPort.options[0]
+
         return selectedSerialPort
 
     def _psuOff(self):
@@ -314,19 +348,19 @@ class PSUGUI(TabbedGUI):
         self._psu.disconnect()
         self._psu = None
         self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.PSU_OFF) )
-                            
+
     def _psuOn(self):
         """@brief Connect to the PDU.
            @return True if successfully connected to a PSU."""
         serialPort = None
         try:
             serialPort = self.getSelectedSerialPort()
-            if serialPort:            
-                self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.CONNECTING_TO_PSU, ("Connecting to {}".format(serialPort),)) ) 
+            if serialPort:
+                self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.CONNECTING_TO_PSU, ("Connecting to {}".format(serialPort),)) )
                 self._psu = ETMXXXXP(serialPort)
-                self._psu.connect()    
-                self._psu.getOutput()  
-                #Ensure the voltage comes up from a low voltage rather than down 
+                self._psu.connect()
+                self._psu.getOutput()
+                #Ensure the voltage comes up from a low voltage rather than down
                 #from a previously higher voltage
                 self._psu.setVoltage(0)
                 self._psu.setVoltage(self.outputVoltageSpinner.value)
@@ -335,16 +369,14 @@ class PSUGUI(TabbedGUI):
                 self._on = True
                 self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.CONNECTED_TO_PSU) )
             else:
-                self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.PSU_CONNECT_FAILED, ("Failed to to connect to PSU as no serial port was selected.",) ) )        
+                self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.PSU_CONNECT_FAILED, ("Failed to to connect to PSU as no serial port was selected.",) ) )
         except Exception as ex:
             print(ex)
             if self._psu:
                 self._psu.disconnect()
                 self._psu = None
             if serialPort:
-                self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.PSU_CONNECT_FAILED, ("Failed to connect to PSU on {}".format(serialPort),) ) )        
+                self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.PSU_CONNECT_FAILED, ("Failed to connect to PSU on {}".format(serialPort),) ) )
             else:
-                self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.PSU_CONNECT_FAILED, ("Failed to connect to PSU on {}".format(serialPort),) ) ) 
+                self._sendUpdateEvent( UpdateEvent(PSUGUIUpdateEvent.PSU_CONNECT_FAILED, ("Failed to connect to PSU on {}".format(serialPort),) ) )
                 self.setStatus("Failed to connect to PSU.")
-            
-            
