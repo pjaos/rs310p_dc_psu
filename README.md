@@ -78,6 +78,8 @@ psu -g -p 192.168.0.40:3800
 ![Overview](images/gui_3.png "Inital GUI With Remote Serial Port")
 
 The user can change the address or serial port from the default values set on the command line.
+Flaviu Tamas has detailed how an ESP link bridge may be used to provide remote access to the
+PSU. See https://flaviutamas.com/2023/rs310p-wifi-mod for details of this.
 
 # Command Line Interface
 
@@ -202,4 +204,6 @@ This leaves a *.deb, *.rpm and a *.tgz file in the packages folder. The installa
 
 
 # Thanks
-Thanks to all those who have contributed to this project.
+Thanks to all those who have contributed to this project including.
+
+Flaviu Tamas
