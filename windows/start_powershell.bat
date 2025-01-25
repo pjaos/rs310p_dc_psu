@@ -1,0 +1,1 @@
+powershell -NoExit Set-Location -Path "C:\Python_Program_Files\rs310p-dc-psu"

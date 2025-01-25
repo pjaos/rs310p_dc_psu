@@ -1,6 +1,0 @@
-#!/bin/sh
-
-echo "************************************"
-echo "* The psu command is now available *"
-echo "* 'psu -h' for command line help   *"
-echo "************************************"

@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "rs310p-dc-psu"
+version = "1.8"
+description = "Provides the ability to control ETommens eTM-xxxxP Series PSU's over a USB interface. This PSU is available as Hanmatek HM305P, Rockseed RS305P, Hanmatek HM310P, RockSeed RS310P, Rockseed RS605P."
+authors = ["Paul Austen <pjaos@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+#fastapi = "0.115.6"
+#starlette = "0.41.3"
+pyserial = "*"
+plotly = "*"
+#ipywidgets = "*"
+#pywebview = "*"
+nicegui = "*"
+pymodbus = "*"
+p3lib = "*"
+
+[tool.poetry.scripts]
+psu = "rs310p_dc_psu.psu:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# nicegui stopped working
+
+#(rs310p-dc-psu-py3.12) pja@L7490:/scratch/git_repos/python3/rs310p_dc_psu$ python rs310p_dc_psu/psu.py -g
+#NiceGUI ready to go on http://localhost:9091
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/nicegui.css not found
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/fonts.css not found
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/quasar.prod.css not found
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/es-module-shims.js not found
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/socket.io.min.js not found
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/tailwindcss.min.js not found
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/vue.global.prod.js not found
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/quasar.umd.prod.js not found
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/nicegui.js not found
+#http://192.168.0.10:9091/_nicegui/2.10.1/static/lang/en-US.umd.prod.js not found
+
+# https://github.com/zauberzeug/nicegui/issues/4255 issue
+
+# I added the following to [tool.poetry.dependencies] and it started working.
+# starlette = "^0.41.3"
+
+# I used poetry show --latest to get the module versions in the venv
+
