@@ -3,6 +3,14 @@ This project provides a command line and gui tool to control the ETommens eTM-xx
 Several manufacturers use this supply, Hanmatek HM305P, Rockseed RS305P, Hanmatek HM310P, RockSeed RS310P,
 Rockseed RS605P. See https://sigrok.org/wiki/ETommens_eTM-xxxxP_Series#Protocol for more details.
 
+Version 1.9 represents a significant change to the code base primarily to
+
+- The tool will now run on Linux and Windows platforms.
+- Update GUI to use the nicegui module rather than bokeh as this provides a
+  cleaner user interface.
+- Update to use the latest pymodbus python module to make it easier for
+  developers to use the psu interface.
+
 # Installation
 The installers folder contains the installers for Linux and Windows systems.
 
