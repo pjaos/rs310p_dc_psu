@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "rs310p-dc-psu"
-#define MyAppVersion "1.9"
+#define MyAppVersion "2.0"
 #define MyAppPublisher "Paul Austen"
 #define MyAppURL "https://github.com/pjaos/ct6_meter_os"
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rs310p-dc-psu"
-version = "1.9"
+version = "2.0"
 description = "Provides the ability to control ETommens eTM-xxxxP Series PSU's over a USB interface. This PSU is available as Hanmatek HM305P, Rockseed RS305P, Hanmatek HM310P, RockSeed RS310P, Rockseed RS605P."
 authors = ["Paul Austen <pjaos@gmail.com>"]
 readme = "README.md"
