@@ -55,6 +55,8 @@ class PSUGUI(Executioner):
     SERIAL_PORT = "Serial Port"
     COL0_WIDTH = f'width: {COL0_WIDTH_PX}px; height:'
     HALF_COL0_WIDTH = f'width: {COL0_WIDTH_PX/2.15}px;'  # Allow for space between elements
+    COL0_WIDTH_A = f'width: {COL0_WIDTH_PX/1.7}px;'  # Allow for space between elements
+    COL0_WIDTH_B = f'width: {COL0_WIDTH_PX/3}px;'  # Allow for space between elements
 
     CONNECTED_MESSAGE = "Connected"
     DISCONNECTED_MESSAGE = "Disconnected"
@@ -83,6 +85,7 @@ class PSUGUI(Executioner):
         self._psuIF = None
         self._psu_access_lock = threading.Lock()
         self._connected = False
+        self._selected_serial_port_select = None
 
     def _get_serial_port_list(self):
         """@return A list of available serial ports."""
@@ -122,15 +125,36 @@ class PSUGUI(Executioner):
 
         return fig
 
+    def _is_host_and_tcpip_port(self, port_list):
+        """@brief Determine if the port list holds an address and TCPIP port.
+           @param port_list Normally a serial port list but maybe a host address and TCPIP port.
+           @return True if a host address and TCPIP port was found."""
+        host_and_tcpip_port = False
+        if isinstance(port_list, tuple) and \
+           len(port_list) == 2 and \
+           isinstance(port_list[0], str) and \
+           isinstance(port_list[1], int):
+            host_and_tcpip_port = True
+        return host_and_tcpip_port
+
     def _init_gui(self, available_serial_port_list):
         """@brief Setup the GUI.
            @param available_serial_port_list A list of serial port device names on this HW platform at the moment.."""
         with ui.row().classes('w-full h-full'):
             if available_serial_port_list is not None:
                 with ui.column():
-                    self._selected_serial_port_select = ui.select(available_serial_port_list,
-                                                                  label=PSUGUI.SERIAL_PORT,
-                                                                  value=available_serial_port_list[0]).style(PSUGUI.COL0_WIDTH)
+                    if self._is_host_and_tcpip_port(available_serial_port_list):
+                        with ui.row():
+                            self._host_address_input = ui.input(label="Address",
+                                                                value=available_serial_port_list[0]).style(PSUGUI.COL0_WIDTH_A)
+                            self._tcpip_port_number = ui.number(label="TCPIP Port",
+                                                            min=1,
+                                                            max=65535,
+                                                            value=available_serial_port_list[1]).style(PSUGUI.COL0_WIDTH_B)
+                    else:
+                        self._selected_serial_port_select = ui.select(available_serial_port_list,
+                                                                    label=PSUGUI.SERIAL_PORT,
+                                                                    value=available_serial_port_list[0]).style(PSUGUI.COL0_WIDTH)
 
                     with ui.row():
                         self._connect_button = ui.button("Connect",
@@ -289,8 +313,16 @@ class PSUGUI(Executioner):
     @exception_handler_decorator
     def _connect(self):
         """@brief Connect to the PSU."""
-        self._psuIF = ETMXXXXP(self._selected_serial_port_select.value)
-        self._psuIF.connect()
+        if self._selected_serial_port_select:
+            connect_to = self._selected_serial_port_select.value
+        else:
+            connect_to = (self._host_address_input.value, self._tcpip_port_number.value)
+
+        self._psuIF = ETMXXXXP(connect_to)
+        connected = self._psuIF.connect()
+        if not connected:
+            raise Exception(f"Failed to connect to {connect_to}")
+
         self._send(PSUGUI.INFO_MESSAGE, f"Opened {self._selected_serial_port_select.value}")
         self._send(PSUGUI.INFO_MESSAGE, "Checking for PSU response...")
         target_volts = self._psuIF.getTargetVolts()
@@ -358,13 +390,24 @@ class PSUGUI(Executioner):
         if self._debug:
             self._guiLogLevel = "debug"
 
-    def start(self):
-        """@brief Start the GUI."""
-        available_serial_port_list = self._get_serial_port_list()
-        if len(available_serial_port_list) == 0:
-            print("No serial ports found on this machine.")
-            input("Press any key to continue")
-            return
+    def start(self, cmd_line_port):
+        """@brief Start the GUI.
+           @param cmd_line_port The serial port or address/port pair passed on the command line."""
+        if cmd_line_port is None:
+            available_serial_port_list = self._get_serial_port_list()
+        else:
+            # Use a single serial port
+            if isinstance(cmd_line_port, str):
+                available_serial_port_list = [cmd_line_port]
+
+            # USe an address/port tuple
+            elif self._is_host_and_tcpip_port(cmd_line_port):
+                available_serial_port_list = cmd_line_port
+
+            # Fall back to a list of serial ports
+            else:
+                available_serial_port_list = self._get_serial_port_list()
+
         self._update_gui_log_level()
 
         self._init_gui(available_serial_port_list)

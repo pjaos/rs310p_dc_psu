@@ -75,6 +75,9 @@ class PSU(object):
             log.setLevel(logging.DEBUG)
 
         if openSerialPort:
+            if self._options.p is None:
+                raise Exception("Serial port not set. Use the -p command line option to set the serial port.")
+
             self._psuIF = ETMXXXXP(self._options.p)
             if not self._psuIF.connect():
                 raise Exception(f"Failed to connect to {self._options.p}")
@@ -108,9 +111,8 @@ class PSU(object):
     def _showVerboseStatus(self):
         """@brief Show the verbose PSU stats."""
         outputOn = self._psuIF.getOutput()
-# PJA
-#        protection = self._psuIF.getProtectionState()
-#        model = self._psuIF.getModel()
+        protection = self._psuIF.getProtectionState()
+        model = self._psuIF.getModel()
         targetVolts = self._psuIF.getTargetVolts()
         volts, amps, watts = self._psuIF.getOutputStats()
         currentLimit = self._psuIF.getCurrentLimit()
@@ -126,6 +128,8 @@ class PSU(object):
         self._info("Over current (amps):    {:.3f}".format(oAmps))
         self._info("Over power (watts):     {:.3f}".format(oWatts))
         self._info("Buzzer:                 {}".format(self._getOnOff(buzzerOn)))
+        self._info("Model:                  {}".format(model))
+        self._info("Protection state:       {}".format(protection))
 
     def _recordLog(self, reading):
         """@brief Record data to the log file.
@@ -154,7 +158,6 @@ class PSU(object):
         fd.close()
         for line in lines:
             elems = line.split(',')
-            print(f'PJA: elems={elems}')
             if len(elems) == 4:
                 try:
                     tStr = elems[0]
@@ -171,7 +174,8 @@ class PSU(object):
                     readingList.append(reading)
                 except ValueError:
                     pass
-
+        reading_count = len(readingList)
+        self._uio.info(f"Loaded {reading_count} readings from the {self._options.log} file.")
         return readingList
 
     def _appendCreateFile(self, uio, aFile, quiet=False):
@@ -236,7 +240,7 @@ class PSU(object):
                         address=self._options.address,
                         reload=self._options.reload,
                         debug=self._options.debug)
-        psgGui.start()
+        psgGui.start(self._options.p)
 
     def process(self):
         """@brief Process the command line arguments"""
@@ -310,8 +314,8 @@ def main():
                             action='store_true',
                             help="Enable debugging.")
         parser.add_argument("-p",
-                            help="The local machine USB serial port connected to the PSU (default={}) or the 'host:port' format for an Esp-Link bridge.".format(PSU.DEFAULT_SERIAL_PORT),
-                            default=PSU.DEFAULT_SERIAL_PORT)
+                            help="The local machine USB serial port connected to the PSU or the 'host:port' format for an Esp-Link bridge.",
+                            default=None)
         parser.add_argument("-v",
                             help="The required output voltage.",
                             type=float,
@@ -405,7 +409,7 @@ def main():
         uio.enableDebug(options.debug)
         uio.logAll(True)
 
-        if ':' in options.p:
+        if options.p and ':' in options.p:
             host, port = options.p.split(':')
             options.p = (host, int(port))
 
