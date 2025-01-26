@@ -152,9 +152,12 @@ class PSUGUI(Executioner):
                                                                 max=65535,
                                                                 value=available_serial_port_list[1]).style(PSUGUI.COL0_WIDTH_B)
                     else:
+                        value = None
+                        if len(available_serial_port_list) > 0:
+                            value = available_serial_port_list[0]
                         self._selected_serial_port_select = ui.select(available_serial_port_list,
                                                                       label=PSUGUI.SERIAL_PORT,
-                                                                      value=available_serial_port_list[0]).style(PSUGUI.COL0_WIDTH)
+                                                                      value=value).style(PSUGUI.COL0_WIDTH)
 
                     with ui.row():
                         self._connect_button = ui.button("Connect",
@@ -318,8 +321,12 @@ class PSUGUI(Executioner):
         else:
             connect_to = (self._host_address_input.value, self._tcpip_port_number.value)
 
+        if connect_to is None:
+            raise Exception("No serial port selected.")
+
         self._psuIF = ETMXXXXP(connect_to)
         connected = self._psuIF.connect()
+
         if not connected:
             raise Exception(f"Failed to connect to {connect_to}")
 
