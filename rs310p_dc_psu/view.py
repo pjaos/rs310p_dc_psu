@@ -148,13 +148,13 @@ class PSUGUI(Executioner):
                             self._host_address_input = ui.input(label="Address",
                                                                 value=available_serial_port_list[0]).style(PSUGUI.COL0_WIDTH_A)
                             self._tcpip_port_number = ui.number(label="TCPIP Port",
-                                                            min=1,
-                                                            max=65535,
-                                                            value=available_serial_port_list[1]).style(PSUGUI.COL0_WIDTH_B)
+                                                                min=1,
+                                                                max=65535,
+                                                                value=available_serial_port_list[1]).style(PSUGUI.COL0_WIDTH_B)
                     else:
                         self._selected_serial_port_select = ui.select(available_serial_port_list,
-                                                                    label=PSUGUI.SERIAL_PORT,
-                                                                    value=available_serial_port_list[0]).style(PSUGUI.COL0_WIDTH)
+                                                                      label=PSUGUI.SERIAL_PORT,
+                                                                      value=available_serial_port_list[0]).style(PSUGUI.COL0_WIDTH)
 
                     with ui.row():
                         self._connect_button = ui.button("Connect",

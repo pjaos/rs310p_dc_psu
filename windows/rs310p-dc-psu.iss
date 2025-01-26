@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "rs310p-dc-psu"
-#define MyAppVersion "1.8"
+#define MyAppVersion "1.9"
 #define MyAppPublisher "Paul Austen"
 #define MyAppURL "https://github.com/pjaos/ct6_meter_os"
 
@@ -45,7 +45,9 @@ Source: "../README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "../pyproject.toml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "../assets/*"; DestDir: "{app}/assets/"; Flags: ignoreversion
 Source: "../rs310p_dc_psu/*"; DestDir: "{app}/rs310p_dc_psu/"; Flags: ignoreversion recursesubdirs
-Source: "rs310p-dc-psu.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "psu.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "psu-gui.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "start_rs310p_dc_psu_from_powershell.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "start_powershell.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "install.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "uninstall.bat"; DestDir: "{app}"; Flags: ignoreversion
@@ -55,7 +57,7 @@ Source: "uninstall.bat"; DestDir: "{app}"; Flags: ignoreversion
 
 [UninstallRun]
 Filename: "{app}\uninstall.bat"; RunOnceId: "pipxuninstall"
-; Flags: runhidden; 
+; Flags: runhidden;
 
 [Code]
 var
